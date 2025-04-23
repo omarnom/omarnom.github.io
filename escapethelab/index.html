@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape the Lab - Some Science Puzzle Game</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #0a0a0a;
+            color: #33ff33;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #33ff33;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px #33ff33;
+        }
+        
+        .dedication {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+        
+        h2 {
+            color: #33ff33;
+            margin-top: 0;
+        }
+        
+        .game-screen {
+            background-color: #111;
+            border: 2px solid #33ff33;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(51, 255, 51, 0.5);
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .game-content {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: normal;
+            overflow-wrap: break-word;
+        }
+        
+        .puzzle-area {
+            background-color: #0a150a;
+            border: 1px solid #33ff33;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        .puzzle-instructions {
+            font-style: italic;
+            margin-bottom: 15px;
+            color: #ccffcc;
+            white-space: normal;
+            overflow-wrap: break-word;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        
+        .btn {
+            background-color: #111;
+            color: #33ff33;
+            border: 1px solid #33ff33;
+            border-radius: 5px;
+            padding: 8px 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #33ff33;
+            color: #111;
+            box-shadow: 0 0 10px rgba(51, 255, 51, 0.8);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        input[type="text"], input[type="number"] {
+            background-color: #111;
+            color: #33ff33;
+            border: 1px solid #33ff33;
+            border-radius: 5px;
+            padding: 8px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            box-shadow: 0 0 5px #33ff33;
+        }
+        
+        .hint-box {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px dashed #33ff33;
+            border-radius: 5px;
+            background-color: rgba(51, 255, 51, 0.1);
+            display: none;
+            white-space: normal;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .progress {
+            flex-grow: 1;
+            height: 10px;
+            background-color: #0a150a;
+            border: 1px solid #33ff33;
+            border-radius: 5px;
+            margin: 0 10px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: #33ff33;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="20" cy="20" r="5" fill="#33ff33" opacity="0.3"><animate attributeName="cy" values="20;30;20" dur="3s" repeatCount="indefinite"/></circle><rect x="60" y="60" width="10" height="20" fill="#39f" opacity="0.3"><animate attributeName="height" values="20;30;20" dur="2s" repeatCount="indefinite"/></rect></svg>');
+            background-repeat: repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            display: none;
+        }
+        
+        .game-over h2 {
+            color: #33ff33;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #33ff33;
+        }
+
+        .game-over .fail-message {
+            color: #ff3333;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #ff3333;
+        }
+        
+        .game-over p {
+            color: #ccffcc;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
+
+        .lab-report {
+            color: #ccffcc;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            border: 1px solid #33ff33;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: rgba(51, 255, 51, 0.1);
+        }
+
+        .lab-report table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .lab-report th, .lab-report td {
+            border: 1px solid #33ff33;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .lab-report th {
+            background-color: rgba(51, 255, 51, 0.2);
+        }
+        
+        #periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            gap: 2px;
+            margin-bottom: 20px;
+            font-size: 0.7rem;
+        }
+        
+        .element {
+            border: 1px solid #33ff33;
+            padding: 3px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .element:hover {
+            background-color: rgba(51, 255, 51, 0.2);
+        }
+        
+        .element.selected {
+            background-color: rgba(51, 255, 51, 0.4);
+        }
+        
+        .element .symbol {
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        
+        .element .number {
+            font-size: 0.6rem;
+        }
+        
+        #dna-puzzle .base {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            margin: 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        #dna-puzzle .base.adenine { background-color: #5eba7d; }
+        #dna-puzzle .base.thymine { background-color: #c33; }
+        #dna-puzzle .base.guanine { background-color: #f90; }
+        #dna-puzzle .base.cytosine { background-color: #39f; }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        .typing {
+            overflow: hidden;
+            animation: typing 2s steps(40, end);
+            animation-fill-mode: forwards;
+        }
+        
+        .typing::after {
+            content: '';
+            display: inline-block;
+            width: 100%;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px #33ff33; }
+            50% { box-shadow: 0 0 20px #33ff33; }
+            100% { box-shadow: 0 0 5px #33ff33; }
+        }
+        
+        .pulse {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes flicker {
+            0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+                opacity: 1;
+            }
+            20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+                opacity: 0.33;
+            }
+        }
+        
+        .flicker {
+            animation: flicker 4s infinite;
+        }
+
+        .success-message {
+            color: #33ff33;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .failure-message {
+            color: #ff3333;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .inventory {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #33ff33;
+            border-radius: 5px;
+        }
+        
+        .inventory-title {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: #ccffcc;
+        }
+        
+        .inventory-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .inventory-item {
+            padding: 5px 10px;
+            background-color: #0a150a;
+            border: 1px solid #33ff33;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+
+        .name-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            display: none;
+        }
+
+        .name-modal-content {
+            background-color: #111;
+            border: 2px solid #33ff33;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: #33ff33;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 11;
+        }
+
+        .modal-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 15;
+            display: none;
+        }
+
+        .modal-content {
+            background-color: #111;
+            border: 2px solid #33ff33;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #33ff33;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .info-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .power-ups {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .story-text, .puzzle-instructions {
+                font-size: 0.9rem;
+                line-height: 1.4;
+            }
+            .btn {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="flicker">ESCAPE THE LAB</h1>
+            <div class="dedication">for dr. hadeer foad & students</div>
+        </header>
+        
+        <div class="status-bar">
+            <div>Room: <span id="current-stage">0</span>/10</div>
+            <div class="progress">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div>Time: <span id="timer">00:00</span></div>
+        </div>
+        
+        <div class="info-buttons">
+            <button class="btn" id="leaderboard-btn">Leaderboard</button>
+            <button class="btn" id="contributors-btn">Contributors</button>
+        </div>
+        
+        <div class="game-screen">
+            <div class="game-content" id="game-content">
+                <div class="story-text typing" id="story-text">
+                    You wake up in an unfamiliar laboratory. The door is locked, and there's a note on the nearby computer screen: "To escape, prove your scientific knowledge through a series of challenges. Complete all 10 rooms to gain your freedom."
+                </div>
+                
+                <div class="puzzle-area" id="puzzle-area">
+                    <div class="puzzle-instructions" id="puzzle-instructions">
+                        click the button below to start ur escape
+                    </div>
+                    <div id="puzzle-content"></div>
+                    <div class="success-message" id="success-message" style="display: none;"></div>
+                    <div class="failure-message" id="failure-message" style="display: none;"></div>
+                    <div class="power-ups" id="power-ups" style="display: none;">
+                        <button class="btn" id="use-lab-notebook" disabled>Use Lab Notebook</button>
+                        <button class="btn" id="use-time-freeze" disabled>Use Time Freeze</button>
+                        <button class="btn" id="use-formula-sheet" disabled>Use Formula Sheet</button>
+                    </div>
+                </div>
+                
+                <div class="hint-box" id="hint-box" style="display: none;"></div>
+                
+                <div class="controls">
+                    <button class="btn" id="start-btn">Start Challenge</button>
+                    <button class="btn" id="submit-btn" style="display: none;">Submit Answer</button>
+                    <button class="btn" id="next-btn" style="display: none;">Next Room</button>
+                    <button class="btn" id="hint-btn" style="display: none;">Show Hint</button>
+                </div>
+            </div>
+            
+            <div class="name-modal" id="name-modal">
+                <div class="name-modal-content">
+                    <h2>Enter Your Name</h2>
+                    <input type="text" id="player-name" placeholder="Your name..." maxlength="20">
+                    <button class="btn" id="submit-name-btn">Submit</button>
+                </div>
+            </div>
+            
+            <div class="modal-dialog" id="leaderboard-modal">
+                <div class="modal-content">
+                    <button class="modal-close" id="close-leaderboard">×</button>
+                    <h2>Leaderboard</h2>
+                    <div id="leaderboard-content">
+                        <p>No scores yet. Be the first to complete the challenge!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-dialog" id="contributors-modal">
+                <div class="modal-content">
+                    <button class="modal-close" id="close-contributors">×</button>
+                    <h2>Contributors</h2>
+                    <div id="contributors-content">
+                        <p>Made by: omarnom</p>
+                        <p>UI Changes: .dziurwa</p>
+                        <p>Some Questions: llsc12</p>
+                        <p>Thank you for playing!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-dialog" id="formula-sheet-modal">
+                <div class="modal-content">
+                    <button class="modal-close" id="close-formula-sheet">×</button>
+                    <h2>Formula Sheet</h2>
+                    <div id="formula-sheet-content"></div>
+                </div>
+            </div>
+            
+            <div class="game-over" id="game-over">
+                <h2 id="game-over-title">CONGRATULATIONS!</h2>
+                <p id="game-over-message">You've escaped the lab by mastering all the scientific challenges!</p>
+                <p>Total time: <span id="final-time">00:00</span></p>
+                <div class="lab-report" id="lab-report">
+                    <h3>Lab Report</h3>
+                    <table>
+                        <tr>
+                            <th>Room</th>
+                            <th>Result</th>
+                        </tr>
+                    </table>
+                </div>
+                <button class="btn pulse" id="restart-btn">Play Again</button>
+                <button class="btn pulse" id="wondahoi-btn">wondahoi!</button>
+            </div>
+        </div>
+        
+        <div class="inventory" id="inventory">
+            <h3 class="inventory-title">Collected Items:</h3>
+            <div class="inventory-items" id="inventory-items"></div>
+        </div>
+    </div>
+
+    <audio id="wondahoi-sound" src="https://cdn.discordapp.com/attachments/962461804385149009/1364681765603512330/WONDERHOY_SOUND_EFFECT_no_background_music.mp3?ex=680a8e6f&is=68093cef&hm=35355e6a5e7433be1e5e2682e206a1a90a513f8813ca5d6aa5d94f5f042cd72f&" preload="auto"></audio>
+
+    <script>
+        // Game state
+        const gameState = {
+            currentStage: 0,
+            startTime: null,
+            elapsedTime: 0,
+            timerInterval: null,
+            inventory: [],
+            hintUsed: Array(10).fill(false),
+            playerName: '',
+            points: 0,
+            leaderboard: JSON.parse(localStorage.getItem('leaderboard')) || [],
+            stageResults: Array(10).fill(null),
+            powerUps: {
+                labNotebook: 0,
+                timeFreeze: 0,
+                formulaSheet: 0
+            },
+            isTimerPaused: false
+        };
+
+        // DOM elements
+        const storyText = document.getElementById('story-text');
+        const puzzleInstructions = document.getElementById('puzzle-instructions');
+        const puzzleContent = document.getElementById('puzzle-content');
+        const puzzleArea = document.getElementById('puzzle-area');
+        const hintBox = document.getElementById('hint-box');
+        const hintBtn = document.getElementById('hint-btn');
+        const currentStageElement = document.getElementById('current-stage');
+        const progressBar = document.getElementById('progress-bar');
+        const timerElement = document.getElementById('timer');
+        const startBtn = document.getElementById('start-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const gameOver = document.getElementById('game-over');
+        const gameOverTitle = document.getElementById('game-over-title');
+        const gameOverMessage = document.getElementById('game-over-message');
+        const finalTime = document.getElementById('final-time');
+        const restartBtn = document.getElementById('restart-btn');
+        const inventoryContainer = document.getElementById('inventory');
+        const inventoryItems = document.getElementById('inventory-items');
+        const successMessage = document.getElementById('success-message');
+        const failureMessage = document.getElementById('failure-message');
+        const nameModal = document.getElementById('name-modal');
+        const playerNameInput = document.getElementById('player-name');
+        const submitNameBtn = document.getElementById('submit-name-btn');
+        const labReportTable = document.querySelector('.lab-report table');
+        const powerUpsSection = document.getElementById('power-ups');
+        const useLabNotebookBtn = document.getElementById('use-lab-notebook');
+        const useTimeFreezeBtn = document.getElementById('use-time-freeze');
+        const useFormulaSheetBtn = document.getElementById('use-formula-sheet');
+        const formulaSheetModal = document.getElementById('formula-sheet-modal');
+        const formulaSheetContent = document.getElementById('formula-sheet-content');
+        const closeFormulaSheetBtn = document.getElementById('close-formula-sheet');
+        
+        const leaderboardBtn = document.getElementById('leaderboard-btn');
+        const contributorsBtn = document.getElementById('contributors-btn');
+        const leaderboardModal = document.getElementById('leaderboard-modal');
+        const contributorsModal = document.getElementById('contributors-modal');
+        const closeLeaderboardBtn = document.getElementById('close-leaderboard');
+        const closeContributorsBtn = document.getElementById('close-contributors');
+        const leaderboardContent = document.getElementById('leaderboard-content');
+
+        // Game stages
+        const stages = [
+            {
+                title: "Welcome",
+                story: "you wake up in an unfamiliar laboratory. the door is locked, and there's a note on the nearby computer screen: \"to escape, prove your scientific knowledge through a series o challenges. complete all 10 rooms to gain your freedom\"",
+                instructions: "click the button below to start your escape",
+                hint: "just click the Start Challenge button to begin, bru",
+                setupFunction: function() {},
+                checkFunction: function() { return true; },
+                formulas: []
+            },
+            {
+                "title": "Element Word Search",
+                "story": "You enter the first room. A large periodic table is displayed on the wall with certain elements glowing. A note reads: 'Find the elements that spell the secret password to continue.'",
+                "instructions": "Select elements from the periodic table whose symbols, when combined in the correct order, spell the word 'ESCAPE'.",
+                "hint": "Look for elements whose symbols form the word 'ESCAPE' when combined. For example, 'Es' is Einsteinium, 'C' is Carbon, etc. Some elements may be fictional.",
+                "setupFunction": function() {
+                    const elements = [
+                        {symbol: "H", name: "Hydrogen", number: 1},
+                        {symbol: "He", name: "Helium", number: 2},
+                        {symbol: "Li", name: "Lithium", number: 3},
+                        {symbol: "Be", name: "Beryllium", number: 4},
+                        {symbol: "B", name: "Boron", number: 5},
+                        {symbol: "C", name: "Carbon", number: 6},
+                        {symbol: "N", name: "Nitrogen", number: 7},
+                        {symbol: "O", name: "Oxygen", number: 8},
+                        {symbol: "F", name: "Fluorine", number: 9},
+                        {symbol: "Ne", name: "Neon", number: 10},
+                        {symbol: "Na", name: "Sodium", number: 11},
+                        {symbol: "Mg", name: "Magnesium", number: 12},
+                        {symbol: "Al", name: "Aluminum", number: 13},
+                        {symbol: "Si", name: "Silicon", number: 14},
+                        {symbol: "P", name: "Phosphorus", number: 15},
+                        {symbol: "S", name: "Sulfur", number: 16},
+                        {symbol: "Cl", name: "Chlorine", number: 17},
+                        {symbol: "K", name: "Potassium", number: 19},
+                        {symbol: "Ca", name: "Calcium", number: 20},
+                        {symbol: "Ti", name: "Titanium", number: 22},
+                        {symbol: "V", name: "Vanadium", number: 23},
+                        {symbol: "Cr", name: "Chromium", number: 24},
+                        {symbol: "Mn", name: "Manganese", number: 25},
+                        {symbol: "Fe", name: "Iron", number: 26},
+                        {symbol: "Co", name: "Cobalt", number: 27},
+                        {symbol: "Ni", name: "Nickel", number: 28},
+                        {symbol: "Cu", name: "Copper", number: 29},
+                        {symbol: "Zn", name: "Zinc", number: 30},
+                        {symbol: "Ga", name: "Gallium", number: 31},
+                        {symbol: "Ge", name: "Germanium", number: 32},
+                        {symbol: "As", name: "Arsenic", number: 33},
+                        {symbol: "Se", name: "Selenium", number: 34},
+                        {symbol: "Br", name: "Bromine", number: 35},
+                        {symbol: "Kr", name: "Krypton", number: 36},
+                        {symbol: "Rb", name: "Rubidium", number: 37},
+                        {symbol: "Sr", name: "Strontium", number: 38},
+                        {symbol: "Y", name: "Yttrium", number: 39},
+                        {symbol: "Zr", name: "Zirconium", number: 40},
+                        {symbol: "Nb", name: "Niobium", number: 41},
+                        {symbol: "Mo", name: "Molybdenum", number: 42},
+                        {symbol: "Tc", name: "Technetium", number: 43},
+                        {symbol: "Ru", name: "Ruthenium", number: 44},
+                        {symbol: "Rh", name: "Rhodium", number: 45},
+                        {symbol: "Pd", name: "Palladium", number: 46},
+                        {symbol: "Ag", name: "Silver", number: 47},
+                        {symbol: "Cd", name: "Cadmium", number: 48},
+                        {symbol: "In", name: "Indium", number: 49},
+                        {symbol: "Sn", name: "Tin", number: 50},
+                        {symbol: "Sb", name: "Antimony", number: 51},
+                        {symbol: "Te", name: "Tellurium", number: 52},
+                        {symbol: "I", name: "Iodine", number: 53},
+                        {symbol: "Xe", name: "Xenon", number: 54},
+                        {symbol: "Cs", name: "Cesium", number: 55},
+                        {symbol: "Ba", name: "Barium", number: 56},
+                        {symbol: "La", name: "Lanthanum", number: 57},
+                        {symbol: "Ce", name: "Cerium", number: 58},
+                        {symbol: "Pr", name: "Praseodymium", number: 59},
+                        {symbol: "Nd", name: "Neodymium", number: 60},
+                        {symbol: "Pm", name: "Promethium", number: 61},
+                        {symbol: "Sm", name: "Samarium", number: 62},
+                        {symbol: "Eu", name: "Europium", number: 63},
+                        {symbol: "Gd", name: "Gadolinium", number: 64},
+                        {symbol: "Tb", name: "Terbium", number: 65},
+                        {symbol: "Dy", name: "Dysprosium", number: 66},
+                        {symbol: "Ho", name: "Holmium", number: 67},
+                        {symbol: "Er", name: "Erbium", number: 68},
+                        {symbol: "Tm", name: "Thulium", number: 69},
+                        {symbol: "Yb", name: "Ytterbium", number: 70},
+                        {symbol: "Lu", name: "Lutetium", number: 71},
+                        {symbol: "Hf", name: "Hafnium", number: 72},
+                        {symbol: "Ta", name: "Tantalum", number: 73},
+                        {symbol: "W", name: "Tungsten", number: 74},
+                        {symbol: "Re", name: "Rhenium", number: 75},
+                        {symbol: "Os", name: "Osmium", number: 76},
+                        {symbol: "Ir", name: "Iridium", number: 77},
+                        {symbol: "Pt", name: "Platinum", number: 78},
+                        {symbol: "Au", name: "Gold", number: 79},
+                        {symbol: "Hg", name: "Mercury", number: 80},
+                        {symbol: "Tl", name: "Thallium", number: 81},
+                        {symbol: "Pb", name: "Lead", number: 82},
+                        {symbol: "Bi", name: "Bismuth", number: 83},
+                        {symbol: "Po", name: "Polonium", number: 84},
+                        {symbol: "At", name: "Astatine", number: 85},
+                        {symbol: "Rn", name: "Radon", number: 86},
+                        {symbol: "Fr", name: "Francium", number: 87},
+                        {symbol: "Ra", name: "Radium", number: 88},
+                        {symbol: "Ac", name: "Actinium", number: 89},
+                        {symbol: "Th", name: "Thorium", number: 90},
+                        {symbol: "Pa", name: "Protactinium", number: 91},
+                        {symbol: "U", name: "Uranium", number: 92},
+                        {symbol: "Np", name: "Neptunium", number: 93},
+                        {symbol: "Pu", name: "Plutonium", number: 94},
+                        {symbol: "Am", name: "Americium", number: 95},
+                        {symbol: "Cm", name: "Curium", number: 96},
+                        {symbol: "Bk", name: "Berkelium", number: 97},
+                        {symbol: "Cf", name: "Californium", number: 98},
+                        {symbol: "Es", name: "Einsteinium", number: 99},
+                        {symbol: "Fm", name: "Fermium", number: 100},
+                        {symbol: "Md", name: "Mendelevium", number: 101},
+                        {symbol: "No", name: "Nobelium", number: 102},
+                        {symbol: "Lr", name: "Lawrencium", number: 103},
+                        {symbol: "Rf", name: "Rutherfordium", number: 104},
+                        {symbol: "Db", name: "Dubnium", number: 105},
+                        {symbol: "Sg", name: "Seaborgium", number: 106},
+                        {symbol: "Bh", name: "Bohrium", number: 107},
+                        {symbol: "Hs", name: "Hassium", number: 108},
+                        {symbol: "Mt", name: "Meitnerium", number: 109},
+                        {symbol: "Ds", name: "Darmstadtium", number: 110},
+                        {symbol: "Rg", name: "Roentgenium", number: 111},
+                        {symbol: "Cn", name: "Copernicium", number: 112},
+                        {symbol: "Nh", name: "Nihonium", number: 113},
+                        {symbol: "Fl", name: "Flerovium", number: 114},
+                        {symbol: "Mc", name: "Moscovium", number: 115},
+                        {symbol: "Lv", name: "Livermorium", number: 116},
+                        {symbol: "Ts", name: "Tennessine", number: 117},
+                        {symbol: "Og", name: "Oganesson", number: 118},
+                        {symbol: "A", name: "Fake Element A", number: 0},
+                        {symbol: "E", name: "Fake Element E", number: 0}
+                    ];
+                    
+                    puzzleContent.innerHTML = `
+                        <p>Use element symbols to spell the password:</p>
+                        <div id="selected-elements"></div>
+                        <div id="periodic-table"></div>
+                        <button class="btn" id="clear-selection">Clear Selection</button>
+                    `;
+                    
+                    const periodicTable = document.getElementById("periodic-table");
+                    const selectedElements = document.getElementById("selected-elements");
+                    const selectionOrder = [];
+                    
+                    elements.forEach(element => {
+                        const elementDiv = document.createElement("div");
+                        elementDiv.className = "element";
+                        elementDiv.innerHTML = `
+                            <div class="number">${element.number}</div>
+                            <div class="symbol">${element.symbol}</div>
+                        `;
+                        elementDiv.dataset.symbol = element.symbol;
+                        
+                        elementDiv.addEventListener("click", function() {
+                            const symbol = this.dataset.symbol;
+                            const isSelected = this.classList.contains("selected");
+                            
+                            if (isSelected) {
+                                this.classList.remove("selected");
+                                const index = selectionOrder.indexOf(symbol);
+                                if (index !== -1) selectionOrder.splice(index, 1);
+                            } else {
+                                this.classList.add("selected");
+                                selectionOrder.push(symbol);
+                            }
+                            
+                            selectedElements.textContent = selectionOrder.join("").toUpperCase();
+                        });
+                        
+                        periodicTable.appendChild(elementDiv);
+                    });
+                    
+                    document.getElementById("clear-selection").addEventListener("click", function() {
+                        selectionOrder.length = 0;
+                        selectedElements.textContent = "";
+                        document.querySelectorAll(".element.selected").forEach(el => {
+                            el.classList.remove("selected");
+                        });
+                    });
+                },
+                "checkFunction": function() {
+                    const selectedElements = document.getElementById("selected-elements").textContent.toUpperCase();
+                    return selectedElements === "ESCAPE";
+                },
+                "formulas": []
+            },
+            {
+                title: "periodic Table Puzzle",
+                story: "as you enter the second room, a digital periodic table lights up on the wall. some elms are highlighted.",
+                instructions: "select elements whose symbols combine to spell the code word: 'Physics'",
+                hint: "look for elements whose symbols are P, H, Y, S, I, C, S. For example, P is Phosphorus.",
+                setupFunction: function() {
+                    const elements = [
+                        {symbol: 'H', name: 'Hydrogen', number: 1},
+                        {symbol: 'He', name: 'Helium', number: 2},
+                        {symbol: 'Li', name: 'Lithium', number: 3},
+                        {symbol: 'Be', name: 'Beryllium', number: 4},
+                        {symbol: 'B', name: 'Boron', number: 5},
+                        {symbol: 'C', name: 'Carbon', number: 6},
+                        {symbol: 'N', name: 'Nitrogen', number: 7},
+                        {symbol: 'O', name: 'Oxygen', number: 8},
+                        {symbol: 'F', name: 'Fluorine', number: 9},
+                        {symbol: 'Ne', name: 'Neon', number: 10},
+                        {symbol: 'Na', name: 'Sodium', number: 11},
+                        {symbol: 'Mg', name: 'Magnesium', number: 12},
+                        {symbol: 'Al', name: 'Aluminum', number: 13},
+                        {symbol: 'Si', name: 'Silicon', number: 14},
+                        {symbol: 'P', name: 'Phosphorus', number: 15},
+                        {symbol: 'S', name: 'Sulfur', number: 16},
+                        {symbol: 'Cl', name: 'Chlorine', number: 17},
+                        {symbol: 'Ar', name: 'Argon', number: 18},
+                        {symbol: 'K', name: 'Potassium', number: 19},
+                        {symbol: 'Ca', name: 'Calcium', number: 20},
+                        {symbol: 'Sc', name: 'Scandium', number:21},
+                        {symbol: 'Ti', name: 'Titanium', number: 22},
+                        {symbol: 'V', name: 'Vanadium', number: 23},
+                        {symbol: 'Cr', name: 'Chromium', number: 24},
+                        {symbol: 'Mn', name: 'Manganese', number: 25},
+                        {symbol: 'Fe', name: 'Iron', number: 26},
+                        {symbol: 'Co', name: 'Cobalt', number: 27},
+                        {symbol: 'Ni', name: 'Nickel', number: 28},
+                        {symbol: 'Cu', name: 'Copper', number: 29},
+                        {symbol: 'Zn', name: 'Zinc', number: 30},
+                        {symbol: 'Ga', name: 'Gallium', number: 31},
+                        {symbol: 'Ge', name: 'Germanium', number: 32},
+                        {symbol: 'As', name: 'Arsenic', number: 33},
+                        {symbol: 'Se', name: 'Selenium', number: 34},
+                        {symbol: 'Br', name: 'Bromine', number: 35},
+                        {symbol: 'Kr', name: 'Krypton', number: 36},
+                        {symbol: 'Rb', name: 'Rubidium', number: 37},
+                        {symbol: 'Sr', name: 'Strontium', number: 38},
+                        {symbol: 'Y', name: 'Yttrium', number: 39},
+                        {symbol: 'Zr', name: 'Zirconium', number: 40},
+                        {symbol: 'I', name: 'Iodine', number: 53},
+                        {symbol: 'Cs', name: 'Cesium', number: 55}
+                    ];
+                    
+                    puzzleContent.innerHTML = `
+                        <p>Click on the elements to spell the code word:</p>
+                        <div id="selected-elements"></div>
+                        <div id="periodic-table"></div>
+                        <button class="btn" id="clear-selection">Clear Selection</button>
+                    `;
+                    
+                    const periodicTable = document.getElementById('periodic-table');
+                    const selectedElements = document.getElementById('selected-elements');
+                    
+                    elements.forEach(element => {
+                        const elementDiv = document.createElement('div');
+                        elementDiv.className = 'element';
+                        elementDiv.innerHTML = `
+                            <div class="number">${element.number}</div>
+                            <div class="symbol">${element.symbol}</div>
+                        `;
+                        elementDiv.dataset.symbol = element.symbol;
+                        
+                        elementDiv.addEventListener('click', function() {
+                            this.classList.add('selected');
+                            selectedElements.textContent += element.symbol;
+                        });
+                        
+                        periodicTable.appendChild(elementDiv);
+                    });
+                    
+                    document.getElementById('clear-selection').addEventListener('click', function() {
+                        selectedElements.textContent = '';
+                        document.querySelectorAll('.element.selected').forEach(el => {
+                            el.classList.remove('selected');
+                        });
+                    });
+                },
+                checkFunction: function() {
+                    const selectedElements = document.getElementById('selected-elements').textContent;
+                    return selectedElements === 'PHYSICS';
+                },
+                formulas: []
+            },
+            {
+                title: "dna Sequence",
+                story: "in the third room, you find a computer with a dna strand displayed on screen. parts of it seem to be missing or incorrect",
+                instructions: "repair the dna seq by arranging the correct complementary base pairs. remember: A pairs with T, and G pairs with C.",
+                hint: "dna has two strands that are complementary. adenine (A) always pairs with thymine (T), and guanine (G) always pairs with cytosine (C).",
+                setupFunction: function() {
+                    puzzleContent.innerHTML = `
+                        <div id="dna-puzzle">
+                            <p>original dna strand:</p>
+                            <div id="original-strand">A T G C A A G T C G</div>
+                            <p>Create the complementary strand by clicking the bases below:</p>
+                            <div id="complementary-strand"></div>
+                            <div id="base-options">
+                                <span class="base adenine" data-base="A">A</span>
+                                <span class="base thymine" data-base="T">T</span>
+                                <span class="base guanine" data-base="G">G</span>
+                                <span class="base cytosine" data-base="C">C</span>
+                            </div>
+                            <button class="btn" id="clear-dna">Clear Strand</button>
+                        </div>
+                    `;
+                    
+                    const baseOptions = document.querySelectorAll('.base');
+                    const complementaryStrand = document.getElementById('complementary-strand');
+                    
+                    baseOptions.forEach(base => {
+                        base.addEventListener('click', function() {
+                            const baseType = this.dataset.base;
+                            const baseSpan = document.createElement('span');
+                            baseSpan.className = `base ${getBaseClass(baseType)}`;
+                            baseSpan.textContent = baseType;
+                            complementaryStrand.appendChild(baseSpan);
+                        });
+                    });
+                    
+                    document.getElementById('clear-dna').addEventListener('click', function() {
+                        complementaryStrand.innerHTML = '';
+                    });
+                    
+                    function getBaseClass(base) {
+                        const classes = {
+                            'A': 'adenine',
+                            'T': 'thymine',
+                            'G': 'guanine',
+                            'C': 'cytosine'
+                        };
+                        return classes[base];
+                    }
+                },
+                checkFunction: function() {
+                    const complementaryStrand = document.getElementById('complementary-strand');
+                    const bases = Array.from(complementaryStrand.children).map(child => child.textContent);
+                    const correctSequence = ['T', 'A', 'C', 'G', 'T', 'T', 'C', 'A', 'G', 'C'];
+                    
+                    if (bases.length !== correctSequence.length) {
+                        return false;
+                    }
+                    
+                    for (let i = 0; i < correctSequence.length; i++) {
+                        if (bases[i] !== correctSequence[i]) {
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                },
+                formulas: []
+            },
+            {
+                title: "acid-Base titration",
+                story: "the fourth room contains laboratory equipment for a titration experiment. there's a digital pH meter and various solutions.",
+                instructions: "calculate the concentration of the NaOH solution needed to neutralize 25 mL of 0.1 M HCl.",
+                hint: "in a neutralization reaction, moles of acid = moles of base. Use M × V for moles, where M is molarity and V is volume in liters.",
+                setupFunction: function() {
+                    puzzleContent.innerHTML = `
+                        <div>
+                            <p>Given:</p>
+                            <ul>
+                                <li>Volume of HCl: 25 mL</li>
+                                <li>Concentration of HCl: 0.1 M</li>
+                                <li>The reaction: HCl + NaOH → NaCl + H₂O</li>
+                            </ul>
+                            <p>What concentration of NaOH solution is needed if you use 20 mL of NaOH solution?</p>
+                            <input type="number" id="naoh-concentration" step="0.01" min="0" placeholder="Enter concentration in M...">
+                        </div>
+                    `;
+                },
+                checkFunction: function() {
+                    const answer = parseFloat(document.getElementById('naoh-concentration').value);
+                    return Math.abs(answer - 0.125) < 0.01;
+                },
+                formulas: [
+                    "Moles = Molarity (M) × Volume (V in liters)",
+                    "At neutralization: moles of acid = moles of base"
+                ]
+            },
+            {
+                title: "newton's Laws",
+                story: "in the fifth room, you face a physics challenge. a monitor displays a problem about forces and motion",
+                instructions: "calculate the force needed to accelerate a 2 kg object at 5 m/s². use newton's second Law: F = ma",
+                hint: "newton's Second Law states that force equals mass times acceleration (F = ma).",
+                setupFunction: function() {
+                    puzzleContent.innerHTML = `
+                        <div>
+                            <p>Given:</p>
+                            <ul>
+                                <li>mass of object: 2 kg</li>
+                                <li>required acceleration: 5 m/s²</li>
+                            </ul>
+                            <p>calculate the force needed:</p>
+                            <input type="number" id="force-answer" step="0.1" min="0" placeholder="Enter force in Newtons...">
+                        </div>
+                    `;
+                },
+                checkFunction: function() {
+                    const answer = parseFloat(document.getElementById('force-answer').value);
+                    return Math.abs(answer - 10) < 0.1;
+                },
+                formulas: [
+                    "F = ma (Force = mass × acceleration)"
+                ]
+            },
+            {
+                title: "genetics Puzzle",
+                story: "the sixth room contains a genetics workstation. the screen shows a Punnett square problem",
+                instructions: "determine the probability of offspring with the genotype 'Aa' when parents with genotypes 'AA' and 'aa' are crossed.",
+                hint: "use a Punnett square. When crossing AA × aa, all offspring will have one dominant (A) and one recessive (a) allele.",
+                setupFunction: function() {
+                    puzzleContent.innerHTML = `
+                        <div>
+                            <p>Parent 1: AA (homozygous dominant)</p>
+                            <p>Parent 2: aa (homozygous recessive)</p>
+                            <p>What percentage of offspring will have the genotype 'Aa'?</p>
+                            <input type="number" id="genetics-answer" min="0" max="100" placeholder="Enter percentage...">
+                        </div>
+                    `;
+                },
+                checkFunction: function() {
+                    const answer = parseInt(document.getElementById('genetics-answer').value);
+                    return answer === 100;
+                },
+                formulas: []
+            },
+            {
+                title: "electricity Circuit",
+                story: "in the seventh room, there's an electrical circuit panel. You need to calculate the missing value to complete the circuit.",
+                instructions: "using Ohm's Law (V=IR), calculate the current flowing through a 5 Ω resistor with 15 volts applied across it.",
+                hint: "ohm's Law states that current (I) equals voltage (V) divided by resistance (R): I = V/R.",
+                setupFunction: function() {
+                    puzzleContent.innerHTML = `
+                        <div>
+                            <p>Given:</p>
+                            <ul>
+                                <li>Voltage: 15 V</li>
+                                <li>Resistance: 5 Ω</li>
+                            </ul>
+                            <p>Calculate the current:</p>
+                            <input type="number" id="current-answer" step="0.1" min="0" placeholder="Enter current in Amperes...">
+                        </div>
+                    `;
+                },
+                checkFunction: function() {
+                    const answer = parseFloat(document.getElementById('current-answer').value);
+                    return Math.abs(answer - 3) < 0.1;
+                },
+                formulas: [
+                    "V = IR (Ohm's Law)",
+                    "I = V/R (Current = Voltage / Resistance)"
+                ]
+            },
+            {
+                title: "gas Laws",
+                story: "the eighth room has a pressure chamber with a control panel. u need to apply the ideal gas law to proceed",
+                instructions: "using the ideal gas law (PV=nRT), calculate the pressure of 2 moles of gas in a 10 L container at 300 K. (R = 0.0821 L·atm/mol·K)",
+                hint: "rearrange the ideal gas law to solve for pressure: P = nRT/V.",
+                setupFunction: function() {
+                    puzzleContent.innerHTML = `
+                        <div>
+                            <p>Given:</p>
+                            <ul>
+                                <li>Number of moles (n): 2 mol</li>
+                                <li>Volume (V): 10 L</li>
+                                <li>Temperature (T): 300 K</li>
+                                <li>Gas constant (R): 0.0821 L·atm/mol·K</li>
+                            </ul>
+                            <p>calculate the pressure (P) in atmospheres:</p>
+                            <input type="number" id="pressure-answer" step="0.1" min="0" placeholder="Enter pressure in atm...">
+                        </div>
+                    `;
+                },
+                checkFunction: function() {
+                    const answer = parseFloat(document.getElementById('pressure-answer').value);
+                    return Math.abs(answer - 4.926) < 0.1;
+                },
+                formulas: [
+                    "PV = nRT (Ideal Gas Law)",
+                    "P = nRT/V (Pressure = (moles × Gas constant × Temperature) / Volume)"
+                ]
+            },
+            {
+                title: "periodic trends",
+                story: "In the ninth room, a screen displays questions about periodic trends to test your chemistry knowledge.",
+                instructions: "Identify which element has the largest atomic radius: Li, Na, K, or Rb.",
+                hint: "Atomic radius increases as you go down a group in the periodic table.",
+                setupFunction: function() {
+                    puzzleContent.innerHTML = `
+                        <div>
+                            <p>Options:</p>
+                            <ul>
+                                <li>Li (Lithium)</li>
+                                <li>Na (Sodium)</li>
+                                <li>K (Potassium)</li>
+                                <li>Rb (Rubidium)</li>
+                            </ul>
+                            <p>Enter the symbol of the element with the largest atomic radius:</p>
+                            <input type="text" id="radius-answer" placeholder="Enter element symbol (e.g., Rb)...">
+                        </div>
+                    `;
+                },
+                checkFunction: function() {
+                    const answer = document.getElementById('radius-answer').value.trim().toLowerCase();
+                    return answer === "rb";
+                },
+                formulas: []
+            },
+            {
+                title: "Final Code",
+                story: "You've reached the final room! A keypad on the door requires a 4-digit code based on your scientific journey.",
+                instructions: "Enter the 4-digit code. It's the number of elements in the periodic table puzzle, the length of the DNA strand, the force from Newton's Laws problem, and the current from the electricity puzzle.",
+                hint: "Recall the answers: number of elements to spell 'Physics' (7), DNA strand length (10), force (10 N), current (3 A).",
+                setupFunction: function() {
+                    puzzleContent.innerHTML = `
+                        <div>
+                            <p>Enter the 4-digit code:</p>
+                            <input type="text" id="final-code" placeholder="Enter 4-digit code...">
+                        </div>
+                    `;
+                },
+                checkFunction: function() {
+                    const answer = document.getElementById('final-code').value.trim();
+                    return answer === "710103";
+                },
+                formulas: []
+            }
+        ];
+
+        // Timer functions
+        function startTimer() {
+            gameState.startTime = Date.now() - gameState.elapsedTime;
+            gameState.timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (!gameState.isTimerPaused) {
+                gameState.elapsedTime = Date.now() - gameState.startTime;
+                const minutes = Math.floor(gameState.elapsedTime / 60000);
+                const seconds = Math.floor((gameState.elapsedTime % 60000) / 1000);
+                timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(gameState.timerInterval);
+        }
+
+        function pauseTimer() {
+            gameState.isTimerPaused = true;
+        }
+
+        function resumeTimer() {
+            gameState.isTimerPaused = false;
+        }
+
+        // Power-up functions
+        function addPowerUp(powerUp) {
+            gameState.powerUps[powerUp]++;
+            updateInventory();
+            updatePowerUpButtons();
+        }
+
+        function useLabNotebook() {
+            if (gameState.powerUps.labNotebook > 0 && gameState.currentStage > 0 && submitBtn.style.display === 'block') {
+                gameState.powerUps.labNotebook--;
+                gameState.points += 10;
+                gameState.stageResults[gameState.currentStage] = 'correct';
+                successMessage.textContent = "Lab Notebook used! Puzzle solved. (+10 points)";
+                successMessage.style.display = 'block';
+                failureMessage.style.display = 'none';
+                submitBtn.style.display = 'none';
+                nextBtn.style.display = 'block';
+                updateInventory();
+                updatePowerUpButtons();
+            }
+        }
+
+        function useTimeFreeze() {
+            if (gameState.powerUps.timeFreeze > 0 && !gameState.isTimerPaused) {
+                gameState.powerUps.timeFreeze--;
+                pauseTimer();
+                useTimeFreezeBtn.textContent = "Time Frozen (30s)";
+                useTimeFreezeBtn.disabled = true;
+                setTimeout(() => {
+                    resumeTimer();
+                    useTimeFreezeBtn.textContent = "Use Time Freeze";
+                    updatePowerUpButtons();
+                }, 30000);
+                updateInventory();
+                updatePowerUpButtons();
+            }
+        }
+
+        function useFormulaSheet() {
+            if (gameState.powerUps.formulaSheet > 0) {
+                const stage = stages[gameState.currentStage];
+                if (stage.formulas && stage.formulas.length > 0) {
+                    formulaSheetContent.innerHTML = '<ul>' + stage.formulas.map(formula => `<li>${formula}</li>`).join('') + '</ul>';
+                } else {
+                    formulaSheetContent.innerHTML = '<p>No formulas available for this puzzle.</p>';
+                }
+                formulaSheetModal.style.display = 'flex';
+            }
+        }
+
+        function updatePowerUpButtons() {
+            powerUpsSection.style.display = gameState.currentStage > 0 ? 'flex' : 'none';
+            useLabNotebookBtn.disabled = gameState.powerUps.labNotebook === 0 || submitBtn.style.display !== 'block';
+            useTimeFreezeBtn.disabled = gameState.powerUps.timeFreeze === 0 || gameState.isTimerPaused;
+            useFormulaSheetBtn.disabled = gameState.powerUps.formulaSheet === 0;
+        }
+
+        // Inventory update
+        function updateInventory() {
+            inventoryItems.innerHTML = '';
+            const powerUpsList = [
+                { name: 'Lab Notebook', count: gameState.powerUps.labNotebook },
+                { name: 'Time Freeze', count: gameState.powerUps.timeFreeze },
+                { name: 'Formula Sheet', count: gameState.powerUps.formulaSheet }
+            ];
+            powerUpsList.forEach(item => {
+                if (item.count > 0) {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'inventory-item';
+                    itemDiv.textContent = `${item.name} (x${item.count})`;
+                    inventoryItems.appendChild(itemDiv);
+                }
+            });
+            inventoryContainer.style.display = powerUpsList.some(item => item.count > 0) ? 'block' : 'none';
+        }
+
+        // Particle effect for victory
+        function createParticles() {
+            const gameOverScreen = document.getElementById('game-over');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.backgroundColor = i % 2 === 0 ? '#33ff33' : '#39f';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = '0%';
+                gameOverScreen.appendChild(particle);
+
+                const duration = Math.random() * 2 + 2;
+                particle.animate([
+                    { transform: 'translateY(0)', opacity: 1 },
+                    { transform: `translateY(${Math.random() * 100 + 50}vh) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                ], {
+                    duration: duration * 1000,
+                    easing: 'ease-out',
+                    fill: 'forwards'
+                });
+
+                setTimeout(() => particle.remove(), duration * 1000);
+            }
+        }
+
+        // Update leaderboard
+        function updateLeaderboard() {
+            gameState.leaderboard.push({ name: gameState.playerName, points: gameState.points });
+            gameState.leaderboard.sort((a, b) => b.points - a.points);
+            if (gameState.leaderboard.length > 3) {
+                gameState.leaderboard = gameState.leaderboard.slice(0, 3);
+            }
+            localStorage.setItem('leaderboard', JSON.stringify(gameState.leaderboard));
+            
+            leaderboardContent.innerHTML = '<ol>' +
+                gameState.leaderboard.map((entry, index) => 
+                    `<li>${entry.name}: ${entry.points} points</li>`
+                ).join('') + '</ol>';
+            if (gameState.leaderboard.length === 0) {
+                leaderboardContent.innerHTML = '<p>No scores yet. Be the first to complete the challenge!</p>';
+            }
+        }
+
+        // Update lab report
+        function updateLabReport() {
+            for (let i = 1; i < gameState.stageResults.length; i++) {
+                const row = document.createElement('tr');
+                const roomCell = document.createElement('td');
+                const resultCell = document.createElement('td');
+                roomCell.textContent = i;
+                resultCell.textContent = gameState.stageResults[i] === 'correct' ? '✓' : 'x';
+                resultCell.style.color = gameState.stageResults[i] === 'correct' ? '#33ff33' : '#ff3333';
+                row.appendChild(roomCell);
+                row.appendChild(resultCell);
+                labReportTable.appendChild(row);
+            }
+        }
+
+        // Check if all answers were correct
+        function didPlayerWin() {
+            for (let i = 1; i < gameState.stageResults.length; i++) {
+                if (gameState.stageResults[i] !== 'correct') {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Update game UI
+        function updateGameUI() {
+            const stage = stages[gameState.currentStage];
+            storyText.textContent = stage.story;
+            puzzleInstructions.textContent = stage.instructions;
+            puzzleContent.innerHTML = '';
+            successMessage.style.display = 'none';
+            failureMessage.style.display = 'none';
+            hintBox.style.display = gameState.hintUsed[gameState.currentStage] ? 'block' : 'none';
+            hintBox.textContent = stage.hint;
+            currentStageElement.textContent = gameState.currentStage;
+            progressBar.style.width = `${(gameState.currentStage / (stages.length - 1)) * 100}%`;
+            
+            if (gameState.currentStage === 0) {
+                startBtn.style.display = 'block';
+                submitBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+                hintBtn.style.display = 'none';
+            } else {
+                startBtn.style.display = 'none';
+                submitBtn.style.display = 'block';
+                nextBtn.style.display = 'none';
+                hintBtn.style.display = 'block';
+                stage.setupFunction();
+            }
+            updatePowerUpButtons();
+        }
+
+        // Event listeners for modals
+        leaderboardBtn.addEventListener('click', () => {
+            leaderboardModal.style.display = 'flex';
+        });
+
+        contributorsBtn.addEventListener('click', () => {
+            contributorsModal.style.display = 'flex';
+        });
+
+        closeLeaderboardBtn.addEventListener('click', () => {
+            leaderboardModal.style.display = 'none';
+        });
+
+        closeContributorsBtn.addEventListener('click', () => {
+            contributorsModal.style.display = 'none';
+        });
+
+        closeFormulaSheetBtn.addEventListener('click', () => {
+            formulaSheetModal.style.display = 'none';
+        });
+
+        // Power-up event listeners
+        useLabNotebookBtn.addEventListener('click', useLabNotebook);
+        useTimeFreezeBtn.addEventListener('click', useTimeFreeze);
+        useFormulaSheetBtn.addEventListener('click', useFormulaSheet);
+
+        // Event listeners
+        startBtn.addEventListener('click', () => {
+            nameModal.style.display = 'flex';
+            playerNameInput.focus();
+        });
+
+        submitNameBtn.addEventListener('click', () => {
+            const name = playerNameInput.value.trim();
+            if (name) {
+                gameState.playerName = name;
+                nameModal.style.display = 'none';
+                gameState.currentStage++;
+                startTimer();
+                updateGameUI();
+            } else {
+                playerNameInput.placeholder = "Please enter a name...";
+            }
+        });
+
+        submitBtn.addEventListener('click', () => {
+            const stage = stages[gameState.currentStage];
+            const isCorrect = stage.checkFunction();
+            
+            if (isCorrect) {
+                gameState.points += 10;
+                gameState.stageResults[gameState.currentStage] = 'correct';
+                successMessage.textContent = "Correct! Proceed to the next room. (+10 points)";
+                successMessage.style.display = 'block';
+                failureMessage.style.display = 'none';
+                submitBtn.style.display = 'none';
+                nextBtn.style.display = 'block';
+                
+                // Award power-ups at specific stages
+                if (gameState.currentStage === 2) {
+                    addPowerUp('labNotebook');
+                    successMessage.textContent += " Found a Lab Notebook!";
+                } else if (gameState.currentStage === 4) {
+                    addPowerUp('timeFreeze');
+                    successMessage.textContent += " Found a Time Freeze!";
+                } else if (gameState.currentStage === 6) {
+                    addPowerUp('formulaSheet');
+                    successMessage.textContent += " Found a Formula Sheet!";
+                }
+            } else {
+                gameState.stageResults[gameState.currentStage] = 'incorrect';
+                failureMessage.textContent = "Incorrect (x). Moving to next room.";
+                failureMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                submitBtn.style.display = 'none';
+                nextBtn.style.display = 'block';
+            }
+        });
+
+        hintBtn.addEventListener('click', () => {
+            if (!gameState.hintUsed[gameState.currentStage]) {
+                gameState.hintUsed[gameState.currentStage] = true;
+                gameState.points -= 2;
+                hintBox.style.display = 'block';
+                hintBtn.textContent = 'Hide Hint';
+            } else {
+                gameState.hintUsed[gameState.currentStage] = false;
+                hintBox.style.display = 'none';
+                hintBtn.textContent = 'Show Hint';
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            gameState.currentStage++;
+            if (gameState.currentStage >= stages.length) {
+                stopTimer();
+                updateLeaderboard();
+                updateLabReport();
+                gameOver.style.display = 'flex';
+                finalTime.textContent = timerElement.textContent;
+
+                if (didPlayerWin()) {
+                    gameOverTitle.textContent = "CONGRATULATIONS!";
+                    gameOverMessage.textContent = "You've escaped the lab by mastering all the scientific challenges!";
+                    createParticles();
+                } else {
+                    gameOverTitle.className = 'fail-message';
+                    gameOverTitle.textContent = "FAILED";
+                    gameOverMessage.textContent = "You didn't master all the challenges. Review your lab report and try again!";
+                }
+            } else {
+                updateGameUI();
+            }
+        });
+
+        restartBtn.addEventListener('click', () => {
+            gameState.currentStage = 0;
+            gameState.elapsedTime = 0;
+            gameState.inventory = [];
+            gameState.hintUsed = Array(10).fill(false);
+            gameState.playerName = '';
+            gameState.points = 0;
+            gameState.stageResults = Array(10).fill(null);
+            gameState.powerUps = { labNotebook: 0, timeFreeze: 0, formulaSheet: 0 };
+            gameState.isTimerPaused = false;
+            gameOver.style.display = 'none';
+            timerElement.textContent = '00:00';
+            labReportTable.innerHTML = `
+                <tr>
+                    <th>Room</th>
+                    <th>Result</th>
+                </tr>
+            `;
+            updateInventory();
+            updateGameUI();
+        });
+
+        document.getElementById('wondahoi-btn').addEventListener('click', () => {
+            const wondahoiSound = document.getElementById('wondahoi-sound');
+            wondahoiSound.currentTime = 0;
+            wondahoiSound.play();
+        });
+
+        updateGameUI();
+        updateLeaderboard();
+        updateInventory();
+    </script>
+</body>
+</html>
